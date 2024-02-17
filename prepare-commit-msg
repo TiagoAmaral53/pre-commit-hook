@@ -1,15 +1,21 @@
 #!/bin/bash
 
-# Captura a mensagem do commit
+# skip this hook if using --no-verify flag
+if [ "$NO_VERIFY" ]; then
+    echo 'pre-commit hook skipped' 1>&2
+    exit 0
+fi
+
+# get message commit
 commit_msg=$(< "$1")
 
-# Define as flags permitidas
-allowed_flags=("feat:" "fix:" "perf:" "docs:" "style:" "refactor:" "test:" "build:" "Merge")
+# set allowed flags
+allowed_flags=("feat:" "fix:" "perf:" "docs:" "style:" "refactor:" "test:" "build:" "conf:")
 
-# Extrai a primeira palavra da mensagem de commit
+# gets first word from the git message
 first_word=$(echo "$commit_msg" | awk 'NR==1 {print $1}')
 
-# Verifica se a primeira palavra está entre as flags permitidas
+# Checks if commit starts with one of those flags
 flag_found=0
 for flag in "${allowed_flags[@]}"; do
     if [[ "$flag" == "$first_word" ]]; then
@@ -19,6 +25,6 @@ for flag in "${allowed_flags[@]}"; do
 done
 
 if [[ $flag_found -eq 0 ]]; then
-    echo "Erro: A mensagem de commit deve começar com uma das seguintes ${red}flags: ${allowed_flags[@]}${reset}" >&2
+    echo "ERROR: Your commit message must starts with one of the following flags: ${allowed_flags[@]}" >&2
     exit 1
 fi
